@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reuseable helpers
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation patterns
+    function isValidIdea(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'mood', 'niche', 'platform', 'status', 'createdAt', 'userId'])
+          && data.keys().size() == 9
+          && data.id is string && data.id.size() <= 128
+          && data.title is string && data.title.size() <= 200
+          && data.description is string && data.description.size() <= 2000
+          && data.mood is string
+          && data.niche is string
+          && data.platform is string
+          && data.status is string
+          && data.createdAt is number
+          && data.userId == request.auth.uid;
+    }
+
+    function isValidPrompt(data) {
+      return data.keys().hasAll(['id', 'title', 'layers', 'preset', 'createdAt', 'userId'])
+          && data.id is string
+          && data.title is string && data.title.size() <= 200
+          && data.layers is map
+          && data.preset is string
+          && data.createdAt is number
+          && data.userId == request.auth.uid;
+    }
+
+    function isValidReference(data) {
+      return data.keys().hasAll(['id', 'title', 'link', 'tags', 'category', 'notes', 'createdAt', 'userId'])
+          && data.id is string
+          && data.title is string && data.title.size() <= 200
+          && data.link is string && data.link.size() <= 500
+          && data.tags is list
+          && data.category is string
+          && data.notes is string
+          && data.createdAt is number
+          && data.userId == request.auth.uid;
+    }
+
+    function isValidVisualDNA(data) {
+      return data.userId == request.auth.uid;
+    }
+
+    function isValidEvolution(data) {
+      return data.promptId is string && data.userId == request.auth.uid;
+    }
+
+    function isValidMoodboardAnalysis(data) {
+      return data.userId == request.auth.uid;
+    }
+
+    // Match patterns
+    match /users/{userId} {
+      match /ideas/{ideaId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(ideaId) && isValidIdea(incoming()) && incoming().createdAt == request.time.toMillis();
+        allow update: if isOwner(userId) && isValidId(ideaId) && isValidIdea(incoming()) 
+                      && incoming().createdAt == existing().createdAt
+                      && incoming().userId == existing().userId;
+        allow delete: if isOwner(userId);
+      }
+
+      match /prompts/{promptId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(promptId) && isValidPrompt(incoming()) && incoming().createdAt == request.time.toMillis();
+        allow update: if isOwner(userId) && isValidId(promptId) && isValidPrompt(incoming())
+                      && incoming().createdAt == existing().createdAt;
+        allow delete: if isOwner(userId);
+      }
+
+      match /references/{refId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(refId) && isValidReference(incoming()) && incoming().createdAt == request.time.toMillis();
+        allow update: if isOwner(userId) && isValidId(refId) && isValidReference(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /visualDNA/current {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) && isValidVisualDNA(incoming());
+      }
+
+      match /evolutions/{evId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(evId) && isValidEvolution(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /moodboardAnalyses/{anId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(anId) && isValidMoodboardAnalysis(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

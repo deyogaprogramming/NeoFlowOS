@@ -1,0 +1,137 @@
+{
+  "entities": {
+    "Idea": {
+      "title": "Idea",
+      "description": "A creative idea for content.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "mood": { "type": "string" },
+        "niche": { "type": "string" },
+        "platform": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "mood", "niche", "platform", "status", "createdAt", "userId"]
+    },
+    "Prompt": {
+      "title": "Prompt",
+      "description": "A structured prompt for AI generation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ideaId": { "type": "string" },
+        "title": { "type": "string" },
+        "layers": {
+          "type": "object",
+          "properties": {
+            "scene": { "type": "string" },
+            "subject": { "type": "string" },
+            "camera": { "type": "string" },
+            "lighting": { "type": "string" },
+            "style": { "type": "string" }
+          }
+        },
+        "preset": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "title", "layers", "preset", "createdAt", "userId"]
+    },
+    "Reference": {
+      "title": "Reference",
+      "description": "A visual or informational reference.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "link": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "category": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "title", "link", "category", "createdAt", "userId"]
+    },
+    "VisualDNA": {
+      "title": "VisualDNA",
+      "description": "The user's core visual identity rules.",
+      "type": "object",
+      "properties": {
+        "styleRules": { "type": "array", "items": { "type": "string" } },
+        "emotionalRules": { "type": "array", "items": { "type": "string" } },
+        "framingRules": { "type": "array", "items": { "type": "string" } },
+        "colorRules": { "type": "array", "items": { "type": "string" } },
+        "forbiddenStyles": { "type": "array", "items": { "type": "string" } },
+        "userId": { "type": "string" }
+      },
+      "required": ["userId"]
+    },
+    "PromptEvolution": {
+      "title": "PromptEvolution",
+      "description": "Version tracking for a prompt's performance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "promptId": { "type": "string" },
+        "version": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "evaluation": { "type": "string" },
+        "whatWorked": { "type": "string" },
+        "whatFailed": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "promptId", "version", "evaluation", "whatWorked", "whatFailed", "createdAt", "userId"]
+    },
+    "MoodboardAnalysis": {
+      "title": "MoodboardAnalysis",
+      "description": "AI analysis of a moodboard.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "tone": { "type": "string" },
+        "rhythm": { "type": "string" },
+        "composition": { "type": "string" },
+        "emotionalDensity": { "type": "string" },
+        "styleFingerprint": { "type": "string" },
+        "visualSummary": { "type": "string" },
+        "promptDirection": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["id", "images", "tone", "rhythm", "composition", "emotionalDensity", "styleFingerprint", "visualSummary", "promptDirection", "createdAt", "userId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/ideas/{ideaId}": {
+      "schema": "Idea",
+      "description": "User's creative ideas."
+    },
+    "users/{userId}/prompts/{promptId}": {
+      "schema": "Prompt",
+      "description": "User's AI prompts."
+    },
+    "users/{userId}/references/{referenceId}": {
+      "schema": "Reference",
+      "description": "User's references."
+    },
+    "users/{userId}/visualDNA/current": {
+      "schema": "VisualDNA",
+      "description": "User's visual identity."
+    },
+    "users/{userId}/evolutions/{evolutionId}": {
+      "schema": "PromptEvolution",
+      "description": "Tracking prompt iterations."
+    },
+    "users/{userId}/moodboardAnalyses/{analysisId}": {
+      "schema": "MoodboardAnalysis",
+      "description": "Moodboard analysis results."
+    }
+  }
+}
